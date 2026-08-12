@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAB Scale Converter</title>
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --bg-card: #242424;
+    --bg-input: #2e2e2e;
+    --border: #3d3d3d;
+    --text: #e8e8e8;
+    --text-muted: #a0a0a0;
+    --accent: #c62828;
+    --highlight: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--highlight);
+    letter-spacing: -0.5px;
+  }
+
+  header .subtitle {
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin-top: 0.35rem;
+    font-weight: 500;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.7rem 1.1rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .explanation {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.75rem;
+    font-size: 0.98rem;
+    color: var(--text-muted);
+  }
+
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 1.75rem;
+    align-items: start;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 820px) {
+    .top-grid { grid-template-columns: 1fr; }
+  }
+
+  .howto, .converter, .notes-card, .landmarks-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem;
+  }
+
+  .howto h2, .converter h2, .notes-card h2, .landmarks-card h2 {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .howto ol {
+    padding-left: 1.2rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .howto li { margin-bottom: 0.7rem; }
+  .howto li strong { color: var(--text); }
+
+  .form-group { margin-bottom: 1.15rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  input[type="number"], input[type="text"], select {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .unit-label {
+    min-width: 52px;
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 1.75rem;
+    align-items: stretch;
+  }
+
+  @media (max-width: 820px) {
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  .letter-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 280px;
+  }
+
+  .letter-box .label {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .letter-box .big-letter {
+    font-size: 7.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    word-break: break-all;
+    max-width: 100%;
+  }
+
+  .letter-box .index {
+    font-size: 1.35rem;
+    color: var(--text-muted);
+    margin-top: 0.6rem;
+    font-weight: 500;
+  }
+
+  .results {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem;
+  }
+
+  .results h3 {
+    font-size: 1rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .result-grid { display: grid; gap: 0.75rem; }
+
+  .result-item {
+    background: var(--bg-input);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    border-left: 3px solid var(--accent);
+  }
+
+  .result-item .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .result-item .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--highlight);
+  }
+
+  .result-item .sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+
+  .disclaimer {
+    margin-top: 1.1rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 0.9rem;
+    line-height: 1.45;
+  }
+
+  /* Notes */
+  .notes-section { margin-bottom: 1.75rem; }
+
+  .notes-card h3 {
+    font-size: 1rem;
+    color: var(--highlight);
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .notes-card h3:first-of-type { margin-top: 0.5rem; }
+
+  .notes-card p, .notes-card li {
+    color: var(--text-muted);
+    font-size: 0.94rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .notes-card ul {
+    padding-left: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .notes-card strong { color: var(--text); }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 0.75rem;
+  }
+
+  table.landmarks {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  table.landmarks th {
+    background: #1f1f1f;
+    color: var(--accent);
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  table.landmarks td {
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  table.landmarks tr:hover td {
+    background: #2a2a2a;
+    color: var(--text);
+  }
+
+  table.landmarks .letter-cell {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .optional-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>VAB Scale Converter</h1>
+      <div class="subtitle">Vyktoria's Absolute Breast Scale</div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('converter')">Ref Sheet Converter</button>
+      <button class="tab-btn" onclick="switchTab('bra')">IRL Bra Size to VABS Converter</button>
+      <button class="tab-btn" onclick="switchTab('notes')">Notes on the VAB Scale</button>
+    </div>
+
+    <!-- ==================== REF SHEET CONVERTER TAB ==================== -->
+    <div id="tab-converter" class="tab-content active">
+      <section class="explanation">
+        <p>Welcome! If you have ever wanted to find out what size your female or futa OC's breasts are, then the VABS converter is for you! If you have a reference sheet that is "accurate" in proportions and is easily measurable, then you can input that data into the VABS converter and find out how big your boobs are on Vyktoria's Absolute Breast Scale! It will give you the diameter of your OC's boob, its projection (how far it sticks out from the ribcage), volume (milk!), and weight!</p>
+        <p style="margin-top:0.75rem;">The scale starts with real-world-style sizing (A–Z), then uses gentle geometric growth through the double-letter range (AA–ZZ), and stronger steps in the triple repeated letters (AAA–ZZZ). The final size, <strong>ZZZ</strong>, sits at roughly <strong>26.6 km / 16.5 mi</strong> diameter. Anything larger is reported as <strong>ZZZ+</strong>.</p>
+      </section>
+
+      <div class="top-grid">
+        <aside class="howto">
+          <h2>How to Use</h2>
+          <ol>
+            <li>Select a <strong>Unit of Measurement</strong> mode:
+              <ul style="margin-top:0.35rem;margin-bottom:0.35rem;">
+                <li><strong>Pixels / Metric</strong> — real height in meters, drawing measurements in pixels</li>
+                <li><strong>Pixels / Imperial (ft-in)</strong> — real height in feet+inches, drawing measurements in pixels</li>
+                <li><strong>Imperial (ft-in)</strong> — real height in feet+inches, drawing measurements in inches</li>
+                <li><strong>Metric</strong> — real height in meters, drawing measurements in cm</li>
+              </ul>
+            </li>
+            <li>Enter the character’s <strong>in-universe full height</strong> (always real-world units).</li>
+            <li>Measure your OC on your reference sheet and input the length into the <strong>"Measured Length of OC"</strong> field.</li>
+            <li>Enter the measured diameter of <strong>ONE breast</strong> from your ref sheet (widest point) into the <strong>"Measured Diameter of OC's Breast"</strong> field.</li>
+            <li>Scale factor, real diameter, VAB Index, projection, volume and weight will be calculated for you!</li>
+          </ol>
+        </aside>
+
+        <section class="converter">
+          <h2>Ref Sheet Converter</h2>
+
+          <div class="form-group">
+            <label for="unit">Unit of Measurement</label>
+            <select id="unit" onchange="updateUnitLabels(); calculateRef()">
+              <option value="px_metric">Pixels / Metric</option>
+              <option value="px_imperial">Pixels / Imperial (ft-in)</option>
+              <option value="imperial">Imperial (ft-in)</option>
+              <option value="metric">Metric</option>
+            </select>
+          </div>
+
+          <!-- Real Height: Metric (cm) -->
+          <div class="form-group" id="realHeightMetricGroup">
+            <label for="realHeightM">OC's In-Universe Height</label>
+            <div class="input-row">
+              <input type="number" id="realHeightM" placeholder="e.g. 3.73" step="any" min="0" oninput="calculateRef()">
+              <span class="unit-label">m</span>
+            </div>
+          </div>
+
+          <!-- Real Height: Imperial (ft + in) -->
+          <div class="form-group" id="realHeightImperialGroup" style="display:none;">
+            <label>OC's In-Universe Height</label>
+            <div class="input-row" style="gap:0.5rem;">
+              <input type="number" id="realHeightFt" placeholder="ft" step="1" min="0" oninput="calculateRef()" style="width:45%;">
+              <span class="unit-label" style="min-width:auto;">ft</span>
+              <input type="number" id="realHeightIn" placeholder="in" step="any" min="0" oninput="calculateRef()" style="width:45%;">
+              <span class="unit-label" style="min-width:auto;">in</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="drawHeight">Measured Length of OC from Ref Sheet</label>
+            <div class="input-row">
+              <input type="number" id="drawHeight" placeholder="e.g. 10.5" step="any" min="0" oninput="calculateRef()">
+              <span class="unit-label" id="drawHeightUnit">px</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="drawDiam">Measured Diameter of OC's Breast from Ref Sheet</label>
+            <div class="input-row">
+              <input type="number" id="drawDiam" placeholder="e.g. 0.85" step="any" min="0" oninput="calculateRef()">
+              <span class="unit-label" id="drawDiamUnit">px</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="letter-box">
+          <div class="label">VAB Cup Size</div>
+          <div class="big-letter" id="bigLetter">—</div>
+          <div class="index" id="bigIndex">Enter measurements above</div>
+        </div>
+
+        <div class="results">
+          <h3>Results</h3>
+          <div class="result-grid" id="resultGrid">
+            <p style="color:var(--text-muted);font-size:0.95rem;">Results will appear here once you enter measurements.</p>
+          </div>
+          <p class="disclaimer">
+            DISCLAIMER: The VAB scale assumes near spherically shaped breasts, and is not an effective tool to measure droopy breasts.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== IRL BRA SIZE CONVERTER TAB ==================== -->
+    <div id="tab-bra" class="tab-content">
+      <section class="explanation">
+        <p>Convert a real-world bra size into the corresponding VAB Scale size. Choose your sizing system (US/European, UK/AUS, or Japanese), then pick a cup letter from the list. Because traditional bra sizes are relative (band + difference) while VAB is absolute (based on breast diameter), this tool estimates the absolute breast size that a given cup letter typically represents and maps it onto the VAB Scale.</p>
+      </section>
+
+      <div class="top-grid">
+        <aside class="howto">
+          <h2>How to Use</h2>
+          <ol>
+            <li>Select <strong>US / European</strong>, <strong>UK / AUS</strong>, or <strong>Japanese</strong> bra sizing system.</li>
+            <li>Choose the <strong>cup letter</strong> from the dropdown (the available options update based on the system you selected).</li>
+            <li>The converter will estimate the absolute breast diameter and return the matching VAB Cup Size plus full stats.</li>
+          </ol>
+        </aside>
+
+        <section class="converter">
+          <h2>IRL Bra Size → VABS</h2>
+
+          <div class="form-group">
+            <label for="braSystem">Bra Sizing System</label>
+            <select id="braSystem" onchange="updateCupOptions(); calculateBra()">
+              <option value="us_eu">US / European</option>
+              <option value="uk_aus">UK / AUS</option>
+              <option value="jp">Japanese</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cupLetter">Cup Letter</label>
+            <select id="cupLetter" onchange="calculateBra()">
+              <!-- options filled by JS -->
+            </select>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="letter-box">
+          <div class="label">VAB Cup Size</div>
+          <div class="big-letter" id="braBigLetter">—</div>
+          <div class="index" id="braBigIndex">Enter a cup letter above</div>
+        </div>
+
+        <div class="results">
+          <h3>Results</h3>
+          <div class="result-grid" id="braResultGrid">
+            <p style="color:var(--text-muted);font-size:0.95rem;">Results will appear here once you enter a cup letter.</p>
+          </div>
+          <p class="disclaimer">
+            DISCLAIMER: This is an approximate conversion based on average real-world breast diameters. Actual tissue volume varies widely between individuals even at the same bra size. The VAB scale assumes near-spherically shaped breasts.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== NOTES TAB ==================== -->
+    <div id="tab-notes" class="tab-content">
+      <div class="notes-section">
+        <div class="notes-card">
+          <h2>About the VAB Scale</h2>
+
+          <p>This is an absolute geometric scale for breast size. The letter encodes the absolute size of the breasts (diameter, projection, volume, weight) relative to a fixed real-world baseline, independent of the character's underbust or overall body size.</p>
+
+          <h3>Baseline (Letter A / Index 0)</h3>
+          <ul>
+            <li><strong>Reference model:</strong> 6'0" (183 cm) woman, 34" underbust, real-world A-cup equivalent</li>
+            <li><strong>Diameter (one breast):</strong> 10.6 cm (4.17 in)</li>
+            <li><strong>Starting shape:</strong> near-hemispherical (sphericity 0.50)</li>
+          </ul>
+
+          <h3>Growth Rules (Hybrid)</h3>
+          <ul>
+            <li><strong>A–Z (Index 0–25):</strong> Linear +0.85 cm per step (real-world style)</li>
+            <li><strong>AA–ZZ (Index 26–701):</strong> Geometric +1.5% diameter per step (all 676 combinations)</li>
+            <li><strong>AAA–ZZZ (Index 702–727):</strong> Geometric +5% diameter per step (repeated letters only)</li>
+            <li><strong>ZZZ+:</strong> Anything larger than the final ZZZ size (~26.6 km / 16.5 mi diameter)</li>
+          </ul>
+
+          <h3>Letter Tiers</h3>
+          <ul>
+            <li><strong>Single letters A–Z:</strong> 26 sizes (Index 0–25)</li>
+            <li><strong>Double letters AA–ZZ:</strong> 676 sizes (Index 26–701) — all letter combinations</li>
+            <li><strong>Triple letters AAA–ZZZ:</strong> 26 sizes (Index 702–727) — repeated letters only (AAA, BBB, … ZZZ)</li>
+            <li><strong>Total:</strong> 728 sizes + ZZZ+ category</li>
+          </ul>
+
+          <h3>Geometry / Sphericity</h3>
+          <ul>
+            <li><strong>Index 0–8 (A–I):</strong> Sphericity rises linearly from 0.50 (hemisphere) toward 0.95</li>
+            <li><strong>Index 9+ (J and above):</strong> Sphericity locked at 0.95 (near-spherical)</li>
+            <li><strong>Projection</strong> = Sphericity × Diameter</li>
+            <li>0.95 was chosen so the breasts read as strongly spherical to the eye while avoiding the uncanny “perfect floating ball” look of a true 1.00 sphere.</li>
+          </ul>
+
+          <h3>Volume Formula</h3>
+          <ul>
+            <li>r = Diameter / 2</li>
+            <li>Hemisphere volume = (2/3) × π × r³</li>
+            <li>Volume (one breast) = Hemisphere volume × (2 × Sphericity)</li>
+            <li>At s=0.50 → pure hemisphere; at s=0.95 → 95% of the way to a full sphere</li>
+          </ul>
+
+          <h3>Weight</h3>
+          <ul>
+            <li>Density = 0.90 g/cm³</li>
+          </ul>
+
+          <h3>Notes</h3>
+          <ul>
+            <li>Underbust / body-type variation is secondary and does not change the VAB letter.</li>
+            <li>All values are idealized geometric estimates for consistent fictional scaling.</li>
+            <li>Use the Ref Sheet Converter tab to turn drawing measurements into a VAB Index / letter.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="landmarks-card">
+        <h2>Key Landmarks</h2>
+        <div class="table-wrap">
+          <table class="landmarks">
+            <thead>
+              <tr>
+                <th>Letter</th>
+                <th>Index</th>
+                <th>Diam (cm)</th>
+                <th>Diam (in)</th>
+                <th>Proj (cm)</th>
+                <th>Proj (in)</th>
+                <th>Vol Both (L)</th>
+                <th>Weight (lb)</th>
+                <th>Sphericity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="letter-cell">A</td><td>0</td><td>10.6</td><td>4.2</td><td>5.3</td><td>2.1</td><td>0.6</td><td>1.2</td><td>0.50</td></tr>
+              <tr><td class="letter-cell">J</td><td>9</td><td>18.2</td><td>7.2</td><td>17.3</td><td>6.8</td><td>6.0</td><td>12.0</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">Z</td><td>25</td><td>31.9</td><td>12.5</td><td>30.3</td><td>11.9</td><td>32.1</td><td>63.8</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">AA</td><td>26</td><td>32.3</td><td>12.7</td><td>30.7</td><td>12.1</td><td>33.6</td><td>66.7</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">GS</td><td>200</td><td>431</td><td>170</td><td>409</td><td>161</td><td>79,800</td><td>158,400</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">OK</td><td>400</td><td>8,470</td><td>3,335</td><td>8,047</td><td>3,168</td><td>604 ML</td><td>1.2M lb</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">ZZ</td><td>701</td><td>748,435</td><td>294,659</td><td>711,013</td><td>279,926</td><td>4.17e14 L</td><td>—</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">AAA</td><td>702</td><td>785,856</td><td>309,392</td><td>746,563</td><td>293,922</td><td>4.83e14 L</td><td>—</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">III</td><td>710</td><td>1.16e6</td><td>456,693</td><td>1.10e6</td><td>433,858</td><td>1.56e15 L</td><td>—</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">ZZZ</td><td>727</td><td>2.66e6</td><td>1.05e6</td><td>2.53e6</td><td>995,669</td><td>1.87e16 L</td><td>—</td><td>0.95</td></tr>
+              <tr><td class="letter-cell">ZZZ+</td><td>—</td><td colspan="7" style="text-align:left;padding-left:1rem;">Beyond 26.6 km / 16.5 mi diameter</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      VAB Scale — Vyktoria's Absolute Breast Scale · 728 letters · ZZZ ≈ 26.6 km · Near-spherical (s=0.95)
+    </footer>
+  </div>
+
+<script>
+  const BASE_DIAM_CM = 10.6;
+  const STEP_CM = 0.85;
+  const MAX_S = 0.95;
+  const DENSITY = 0.90;
+  const R_DOUBLE = 0.015;   // +1.5% per double-letter step
+  const R_TRIPLE = 0.05;    // +5% per triple-letter step
+  const MAX_INDEX = 727;    // ZZZ
+
+  // Precompute transition diameters
+  const Z_DIAM = BASE_DIAM_CM + 25 * STEP_CM;                    // ~31.85 cm
+  const ZZ_DIAM = Z_DIAM * Math.pow(1 + R_DOUBLE, 676);          // end of doubles
+  const ZZZ_DIAM = ZZ_DIAM * Math.pow(1 + R_TRIPLE, 26);         // end of triples
+
+  // Cup letter → volume step index (A ≈ 0)
+  // Shared progression for absolute diameter mapping onto VAB.
+
+  const US_EU_CUPS = {
+    "AA": -1, "A": 0, "B": 1, "C": 2, "D": 3,
+    "DD": 4, "E": 4, "DDD": 5, "F": 5, "DDDD": 6,
+    "G": 6, "H": 7, "I": 8, "J": 9, "K": 10, "L": 11, "M": 12,
+    "N": 13, "O": 14, "P": 15, "Q": 16, "R": 17, "S": 18, "T": 19,
+    "U": 20, "V": 21, "W": 22, "X": 23, "Y": 24, "Z": 25,
+    "GG": 7, "HH": 8, "II": 9, "JJ": 10, "KK": 11, "LL": 12
+  };
+
+  // UK / AUS: D, DD, E, F, FF, G, GG, H, HH, J...
+  const UK_AUS_CUPS = {
+    "AA": -1, "A": 0, "B": 1, "C": 2, "D": 3, "DD": 4,
+    "E": 5, "F": 6, "FF": 7, "G": 8, "GG": 9,
+    "H": 10, "HH": 11, "J": 12, "JJ": 13, "K": 14, "KK": 15,
+    "L": 16, "LL": 17, "M": 18, "MM": 19, "N": 20, "NN": 21,
+    "O": 22, "P": 23, "Q": 24, "R": 25,
+    "I": 12  // some brands use I after HH
+  };
+
+  // Japanese: sequential single letters (JIS-style), same step size as EU
+  const JP_CUPS = {
+    "AAA": -2, "AA": -1, "A": 0, "B": 1, "C": 2, "D": 3, "E": 4,
+    "F": 5, "G": 6, "H": 7, "I": 8, "J": 9, "K": 10, "L": 11,
+    "M": 12, "N": 13, "O": 14, "P": 15, "Q": 16, "R": 17, "S": 18,
+    "T": 19, "U": 20, "V": 21, "W": 22, "X": 23, "Y": 24, "Z": 25
+  };
+
+  function cupToIndex(cup, system) {
+    cup = cup.trim().toUpperCase().replace(/\s+/g, '');
+    if (!cup) return null;
+
+    let map;
+    if (system === "uk_aus") map = UK_AUS_CUPS;
+    else if (system === "jp") map = JP_CUPS;
+    else map = US_EU_CUPS;  // us_eu default
+
+    if (map.hasOwnProperty(cup)) {
+      return map[cup];
+    }
+
+    // Fallback: pure single letter
+    if (/^[A-Z]$/.test(cup)) {
+      return cup.charCodeAt(0) - 65;
+    }
+
+    // Fallback: repeated letters (HH, KK, etc.)
+    if (/^([A-Z])\1+$/.test(cup)) {
+      const base = cup.charCodeAt(0) - 65;
+      const repeats = cup.length;
+      return base + (repeats - 1) * 2;
+    }
+
+    // Try first letter group
+    const match = cup.match(/^([A-Z]+)/);
+    if (match && map.hasOwnProperty(match[1])) {
+      return map[match[1]];
+    }
+
+    return null;
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      if (btn.getAttribute('onclick').includes("'" + tabId + "'")) {
+        btn.classList.add('active');
+      }
+    });
+  }
+
+  function indexToLetter(i) {
+    if (i < 0) i = 0;
+    if (i > MAX_INDEX) return "ZZZ+";
+    if (i < 26) return String.fromCharCode(65 + i);
+    if (i < 702) {
+      const i2 = i - 26;
+      return String.fromCharCode(65 + Math.floor(i2 / 26)) + String.fromCharCode(65 + (i2 % 26));
+    }
+    // Triples: repeated only (AAA, BBB, ... ZZZ)
+    const t = i - 702;
+    return String.fromCharCode(65 + t).repeat(3);
+  }
+
+  function sphericity(index) {
+    if (index >= 9) return MAX_S;
+    if (index < 0) return 0.5;
+    return 0.5 + (index / 9) * (MAX_S - 0.5);
+  }
+
+  function getDiameterCm(index) {
+    if (index < 0) index = 0;
+    if (index <= 25) return BASE_DIAM_CM + index * STEP_CM;
+    if (index <= 701) return Z_DIAM * Math.pow(1 + R_DOUBLE, index - 25);
+    if (index <= MAX_INDEX) return ZZ_DIAM * Math.pow(1 + R_TRIPLE, index - 701);
+    // Beyond ZZZ — still return a value based on continuing 5% for display
+    return ZZ_DIAM * Math.pow(1 + R_TRIPLE, index - 701);
+  }
+
+  function diameterToIndex(diamCm) {
+    if (diamCm <= Z_DIAM) {
+      return Math.max(0, Math.ceil((diamCm - BASE_DIAM_CM) / STEP_CM));
+    }
+    if (diamCm <= ZZ_DIAM) {
+      // invert geometric: diam = Z * (1.015)^k  →  k = log(diam/Z) / log(1.015)
+      const k = Math.log(diamCm / Z_DIAM) / Math.log(1 + R_DOUBLE);
+      return Math.min(701, 25 + Math.ceil(k));
+    }
+    // triples
+    const k = Math.log(diamCm / ZZ_DIAM) / Math.log(1 + R_TRIPLE);
+    const idx = 701 + Math.ceil(k);
+    return idx > MAX_INDEX ? MAX_INDEX + 1 : idx;  // >727 → ZZZ+
+  }
+
+  function formatLength(cm) {
+    // Progressive metric
+    let metric;
+    if (cm < 100) {
+      metric = (cm < 10 ? cm.toFixed(2) : cm.toFixed(1)) + " cm";
+    } else {
+      const m = cm / 100;
+      if (m < 1000) {
+        metric = (m < 10 ? m.toFixed(2) : m < 100 ? m.toFixed(1) : m.toFixed(0)) + " m";
+      } else {
+        const km = m / 1000;
+        metric = (km < 10 ? km.toFixed(3) : km < 100 ? km.toFixed(2) : km.toFixed(1)) + " km";
+      }
+    }
+    // Progressive imperial
+    const totalInches = cm / 2.54;
+    let imperial;
+    if (totalInches < 12) {
+      imperial = totalInches.toFixed(1) + " in";
+    } else {
+      const feet = totalInches / 12;
+      if (feet < 5280) {
+        imperial = (feet < 10 ? feet.toFixed(2) : feet < 100 ? feet.toFixed(1) : feet.toFixed(0)) + " ft";
+      } else {
+        const miles = feet / 5280;
+        imperial = (miles < 10 ? miles.toFixed(3) : miles.toFixed(2)) + " mi";
+      }
+    }
+    return { metric, imperial };
+  }
+
+  function formatVolume(cm3) {
+    // Metric: cm³ → L → kL → m³ → ML → GL
+    const liters = cm3 / 1000;
+    let metric;
+    if (liters < 1) {
+      metric = cm3.toFixed(0) + " cm³";
+    } else if (liters < 1000) {
+      metric = (liters < 10 ? liters.toFixed(2) : liters.toFixed(1)) + " L";
+    } else if (liters < 1e6) {
+      // 1000 L = 1 m³; prefer m³ once we hit a full cubic meter
+      const m3 = liters / 1000;
+      if (m3 < 1000) {
+        metric = (m3 < 10 ? m3.toFixed(2) : m3 < 100 ? m3.toFixed(1) : m3.toFixed(0)) + " m³";
+      } else {
+        metric = (m3 / 1000).toFixed(2) + " ML";  // 1000 m³ = 1 ML as volume of water-ish
+      }
+    } else if (liters < 1e9) {
+      metric = (liters / 1e6).toFixed(2) + " ML";
+    } else if (liters < 1e12) {
+      metric = (liters / 1e9).toFixed(2) + " GL";
+    } else {
+      metric = liters.toExponential(2) + " L";
+    }
+
+    // Imperial: cu in → cu ft → acre-ft (very large) or just scale cu ft
+    const cuIn = cm3 / 16.387064;
+    let imperial;
+    if (cuIn < 1728) {
+      imperial = (cuIn < 10 ? cuIn.toFixed(1) : cuIn.toFixed(0)) + " cu in";
+    } else {
+      const cuFt = cuIn / 1728;
+      if (cuFt < 1e6) {
+        imperial = (cuFt < 10 ? cuFt.toFixed(2) : cuFt < 100 ? cuFt.toFixed(1) : cuFt.toFixed(0)) + " cu ft";
+      } else if (cuFt < 1e9) {
+        imperial = (cuFt / 1e6).toFixed(2) + " M cu ft";
+      } else {
+        imperial = cuFt.toExponential(2) + " cu ft";
+      }
+    }
+    return { metric, imperial };
+  }
+
+  function formatWeight(kg) {
+    // Metric: kg → t → kt → Mt
+    const lb = kg * 2.20462;
+    let metric;
+    if (kg < 1000) {
+      metric = (kg < 10 ? kg.toFixed(2) : kg.toFixed(1)) + " kg";
+    } else if (kg < 1e6) {
+      const t = kg / 1000;
+      metric = (t < 10 ? t.toFixed(2) : t < 100 ? t.toFixed(1) : t.toFixed(0)) + " t";
+    } else if (kg < 1e9) {
+      metric = (kg / 1e6).toFixed(2) + " kt";
+    } else if (kg < 1e12) {
+      metric = (kg / 1e9).toFixed(2) + " Mt";
+    } else {
+      metric = kg.toExponential(2) + " kg";
+    }
+
+    // Imperial: lb → tons (short tons) → M tons
+    let imperial;
+    if (lb < 2000) {
+      imperial = (lb < 10 ? lb.toFixed(2) : lb.toFixed(1)) + " lb";
+    } else if (lb < 2e6) {
+      const tons = lb / 2000;
+      imperial = (tons < 10 ? tons.toFixed(2) : tons < 100 ? tons.toFixed(1) : tons.toFixed(0)) + " tons";
+    } else if (lb < 2e9) {
+      imperial = (lb / 2e6).toFixed(2) + " M tons";
+    } else {
+      imperial = (lb / 2000).toExponential(2) + " tons";
+    }
+    return { metric, imperial };
+  }
+
+  function computeStats(index) {
+    if (index < 0) index = 0;
+    const beyond = index > MAX_INDEX;
+    if (beyond) index = MAX_INDEX;  // stats at ZZZ ceiling; letter will show ZZZ+
+
+    const diamCm = getDiameterCm(index);
+    const s = sphericity(index);
+    const projCm = s * diamCm;
+    const r = diamCm / 2;
+    const hemiVol = (2/3) * Math.PI * Math.pow(r, 3);
+    const volBoth = hemiVol * (2 * s) * 2;
+    const wtKg = (volBoth * DENSITY) / 1000;
+
+    return {
+      index: beyond ? MAX_INDEX + 1 : index,
+      letter: beyond ? "ZZZ+" : indexToLetter(index),
+      diamCm, projCm, s, volBoth, wtKg
+    };
+  }
+
+    function renderResults(stats, letterEl, indexEl, gridEl) {
+    letterEl.textContent = stats.letter;
+    indexEl.textContent = "Index " + stats.index;
+
+    const diamFmt = formatLength(stats.diamCm);
+    const projFmt = formatLength(stats.projCm);
+    const volFmt = formatVolume(stats.volBoth);
+    const wtFmt = formatWeight(stats.wtKg);
+
+    gridEl.innerHTML = `
+      <div class="result-item">
+        <div class="label">Sphericity of Breast</div>
+        <div class="value">${stats.s.toFixed(3)}</div>
+        <div class="sub">How close to spherical the breast is (0.50 = hemisphere → 0.95 = near-spherical)</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Diameter (one breast)</div>
+        <div class="value">${diamFmt.metric} · ${diamFmt.imperial}</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Projection</div>
+        <div class="value">${projFmt.metric} · ${projFmt.imperial}</div>
+        <div class="sub">How far the breast protrudes from the ribcage (not counting the nipple)</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Volume (both breasts)</div>
+        <div class="value">${volFmt.metric} · ${volFmt.imperial}</div>
+        <div class="sub">Total capacity of both breasts</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Weight (both breasts)</div>
+        <div class="value">${wtFmt.metric} · ${wtFmt.imperial}</div>
+        <div class="sub">Total weight of both breasts</div>
+      </div>
+    `;
+  }
+
+  // ---- Ref Sheet Converter ----
+  function updateUnitLabels() {
+    const unit = document.getElementById('unit').value;
+    const metricGroup = document.getElementById('realHeightMetricGroup');
+    const imperialGroup = document.getElementById('realHeightImperialGroup');
+    const drawHUnit = document.getElementById('drawHeightUnit');
+    const drawDUnit = document.getElementById('drawDiamUnit');
+
+    if (unit === 'px_metric' || unit === 'metric') {
+      metricGroup.style.display = '';
+      imperialGroup.style.display = 'none';
+    } else {
+      metricGroup.style.display = 'none';
+      imperialGroup.style.display = '';
+    }
+
+    if (unit === 'px_metric' || unit === 'px_imperial') {
+      drawHUnit.textContent = 'px';
+      drawDUnit.textContent = 'px';
+    } else if (unit === 'imperial') {
+      drawHUnit.textContent = 'inches';
+      drawDUnit.textContent = 'inches';
+    } else {
+      drawHUnit.textContent = 'cm';
+      drawDUnit.textContent = 'cm';
+    }
+  }
+
+  function calculateRef() {
+    const unit = document.getElementById('unit').value;
+
+    // Real height always converted to cm
+    let realH_cm = 0;
+    if (unit === 'px_metric' || unit === 'metric') {
+      const meters = parseFloat(document.getElementById('realHeightM').value) || 0;
+      realH_cm = meters * 100;
+    } else {
+      const ft = parseFloat(document.getElementById('realHeightFt').value) || 0;
+      const inch = parseFloat(document.getElementById('realHeightIn').value) || 0;
+      realH_cm = (ft * 12 + inch) * 2.54;
+    }
+
+    let drawH = parseFloat(document.getElementById('drawHeight').value) || 0;
+    let drawD = parseFloat(document.getElementById('drawDiam').value) || 0;
+
+    const letterEl = document.getElementById('bigLetter');
+    const indexEl = document.getElementById('bigIndex');
+    const grid = document.getElementById('resultGrid');
+
+    if (!realH_cm || !drawH || !drawD || realH_cm <= 0 || drawH <= 0 || drawD <= 0) {
+      letterEl.textContent = "—";
+      indexEl.textContent = "Enter measurements above";
+      grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.95rem;">Results will appear here once you enter measurements.</p>';
+      return;
+    }
+
+    // Convert drawing measurements to cm so scale is consistent
+    // For pixel modes the scale is simply (real_cm / draw_px) → cm per pixel
+    // For imperial modes convert inches → cm first
+    // For metric modes already in cm
+    let drawH_cm, drawD_cm;
+    if (unit === 'imperial') {
+      drawH_cm = drawH * 2.54;
+      drawD_cm = drawD * 2.54;
+    } else if (unit === 'metric') {
+      drawH_cm = drawH;
+      drawD_cm = drawD;
+    } else {
+      // px_metric or px_imperial: treat pixel values as pure numbers;
+      // scale = real_cm / draw_px  →  real breast diameter in cm = drawD_px * scale
+      drawH_cm = drawH;   // numerically the "length" in px
+      drawD_cm = drawD;
+    }
+
+    const scale = realH_cm / drawH_cm;          // cm per drawing-unit
+    const realDiamCm = drawD_cm * scale;
+
+    let index = diameterToIndex(realDiamCm);
+
+    // Always compute geometry from the real measured diameter
+    const s = sphericity(Math.min(index, MAX_INDEX));
+    const diamCm = realDiamCm;
+    const projCm = s * diamCm;
+    const r = diamCm / 2;
+    const hemiVol = (2/3) * Math.PI * Math.pow(r, 3);
+    const volBoth = hemiVol * (2 * s) * 2;
+    const wtKg = (volBoth * DENSITY) / 1000;
+
+    const stats = {
+      index: index > MAX_INDEX ? MAX_INDEX + 1 : index,
+      letter: index > MAX_INDEX ? "ZZZ+" : indexToLetter(index),
+      diamCm, projCm, s, volBoth, wtKg
+    };
+    renderResults(stats, letterEl, indexEl, grid);
+  }
+
+  function updateCupOptions() {
+    const system = document.getElementById('braSystem').value;
+    const select = document.getElementById('cupLetter');
+    let options = [];
+
+    if (system === 'uk_aus') {
+      options = ["AA","A","B","C","D","DD","E","F","FF","G","GG","H","HH","J","JJ","K","KK","L","LL","M","N","O","P","Q","R"];
+    } else if (system === 'jp') {
+      options = ["AAA","AA","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+    } else {
+      // US / European
+      options = ["AA","A","B","C","D","DD","E","DDD","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+    }
+
+    const current = select.value;
+    select.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+    // restore previous selection if still valid, otherwise default to A
+    if (options.includes(current)) {
+      select.value = current;
+    } else {
+      select.value = options.includes("A") ? "A" : options[0];
+    }
+  }
+
+
+  // ---- Bra Size Converter ----
+  function calculateBra() {
+    const system = document.getElementById('braSystem').value;
+    const cup = document.getElementById('cupLetter').value;
+    const letterEl = document.getElementById('braBigLetter');
+    const indexEl = document.getElementById('braBigIndex');
+    const grid = document.getElementById('braResultGrid');
+
+    const cupIndex = cupToIndex(cup, system);
+
+    if (cupIndex === null) {
+      letterEl.textContent = "—";
+      indexEl.textContent = cup ? "Unrecognized cup letter" : "Enter a cup letter above";
+      grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.95rem;">Enter a valid cup letter (A, D, DD, G, HH, K, etc.).</p>';
+      return;
+    }
+
+    // VAB Index is the cup step (clamped)
+    let index = Math.max(0, cupIndex);
+    const stats = computeStats(index);
+
+    let context = "Index " + stats.index + "  ·  Input: " + cup.trim().toUpperCase() + " (" + (system === 'uk_aus' ? 'UK/AUS' : system === 'jp' ? 'Japanese' : 'US/EU') + ")";
+
+    letterEl.textContent = stats.letter;
+    indexEl.textContent = context;
+
+    const diamFmt = formatLength(stats.diamCm);
+    const projFmt = formatLength(stats.projCm);
+    const volFmt = formatVolume(stats.volBoth);
+    const wtFmt = formatWeight(stats.wtKg);
+
+    grid.innerHTML = `
+      <div class="result-item">
+        <div class="label">Sphericity of Breast</div>
+        <div class="value">${stats.s.toFixed(3)}</div>
+        <div class="sub">How close to spherical the breast is (0.50 = hemisphere → 0.95 = near-spherical)</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Diameter (one breast)</div>
+        <div class="value">${diamFmt.metric} · ${diamFmt.imperial}</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Projection</div>
+        <div class="value">${projFmt.metric} · ${projFmt.imperial}</div>
+        <div class="sub">How far the breast protrudes from the ribcage (not counting the nipple)</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Volume (both breasts)</div>
+        <div class="value">${volFmt.metric} · ${volFmt.imperial}</div>
+        <div class="sub">Total capacity of both breasts</div>
+      </div>
+      <div class="result-item">
+        <div class="label">Weight (both breasts)</div>
+        <div class="value">${wtFmt.metric} · ${wtFmt.imperial}</div>
+        <div class="sub">Total weight of both breasts</div>
+      </div>
+    `;
+  }
+
+  updateUnitLabels();
+  updateCupOptions();
+</script>
+</body>
+</html>
